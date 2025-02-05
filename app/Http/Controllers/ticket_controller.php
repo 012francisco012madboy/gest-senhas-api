@@ -27,13 +27,14 @@ class ticket_controller extends Controller
                 ->where('id_session', $result -> id)
                 ->count();
 
-                tb_ticket:: create([
+                $tb_ticket = tb_ticket:: create([
                     'ref' => $num + 1,
                     'id_service' => $request -> service,
                     'id_session' => $result -> id
                 ]);
 
                 return response([
+                    'ref' => $tb_ticket -> ref,
                     'message' => 'Senha criada com sucesso'
                 ], 201);
             }
@@ -48,13 +49,14 @@ class ticket_controller extends Controller
 
                 $num = 0;
 
-                tb_ticket:: create([
+                $tb_ticket = tb_ticket:: create([
                     'ref' => $num + 1,
                     'id_service' => $request -> service,
                     'id_session' => $tb_session -> id
                 ]);
 
                 return response([
+                    'ref' => $tb_ticket -> ref,
                     'message' => 'Senha criada com sucesso'
                 ], 201);
             }
@@ -66,39 +68,16 @@ class ticket_controller extends Controller
 
             $num = 0;
 
-            tb_ticket:: create([
+            $tb_ticket = tb_ticket:: create([
                 'ref' => $num + 1,
                 'id_service' => $request -> service,
                 'id_session' => $tb_session -> id
             ]);
 
             return response([
+                'ref' => $tb_ticket -> ref,
                 'message' => 'Senha criada com sucesso'
             ], 201);
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function call(Request $request, string $id)
-    {
-        $tb_front_desk = tb_front_desk:: findorfail($id);
-
-        if($tb_front_desk){
-            $tb_front_desk -> update([
-                'id_state' => "2"
-            ]);
-
-            return response([
-                'message' => 'Serviço desassociado'
-            ], 200);
-        }
-        else{
-
-            return response([
-                'message' => 'Serviço não encontrado'
-            ], 200);
         }
     }
 
@@ -119,6 +98,7 @@ class ticket_controller extends Controller
             ->where('tb_tickets.id_service', $service)
             ->where('tb_tickets.id_session', $result -> id)
             ->where('tb_tickets.id_state', '1')
+            ->orderBy('tb_tickets.updated_at', 'asc')
             ->select(
                 'tb_tickets.id',
                 'tb_tickets.ref',
@@ -145,7 +125,7 @@ class ticket_controller extends Controller
             ->join('tb_services as TS', 'TS.id', '=', 'tb_tickets.id_service')
             ->where('tb_tickets.id_session', $result -> id)
             ->where('tb_tickets.id_state', '1')
-            ->orderBy('tb_tickets.updated_at')
+            ->orderBy('tb_tickets.updated_at', 'asc')
             ->select(
                 'tb_tickets.id',
                 'tb_tickets.ref',
