@@ -22,7 +22,7 @@ class ticket_controller extends Controller
         ->first();
 
         if($result){
-            if($result -> created_at -> isToday()){
+            if($result && $result -> created_at -> isToday()){
                 $num = tb_ticket:: query()
                 ->where('id_session', $result -> id)
                 ->count();
@@ -154,11 +154,12 @@ class ticket_controller extends Controller
             ->join('tb_front_desks as TFD', 'TFD.id', '=', 'TUA.id_front_desk')
             ->join('tb_counters as TC', 'TC.id', '=', 'TFD.id_counter')
             ->where('TA.id_state', '3')
+            ->orderBy('tb_tickets.updated_at', 'desc')
             ->select(
                 'tb_tickets.ref',
                 'TC.ref as counter',
             )
-            ->latest('tb_tickets.created_at')
+            ->latest('tb_tickets.updated_at', 'desc')
             ->first();
         }
     }
@@ -242,6 +243,27 @@ class ticket_controller extends Controller
             throw $th;
 
             DB:: rollback();
+        }
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function count(string $id)
+    {
+        $result = tb_session:: query()
+        ->where('id_company', $id)
+        ->where('id_state', '1')
+        ->latest()
+        ->first();
+
+        if($result && $result -> created_at -> isToday()){
+            return tb_ticket:: query()
+            ->where('id_session', $result -> id)
+            ->count();
+        }
+        else{
+            return 0;
         }
     }
 }

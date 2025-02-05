@@ -56,6 +56,7 @@ Route::get("/user-assistant-view/{user}/{desk}", [user_assistant_controller::cla
 
 /* TICKET */
 Route::post("/ticket-add", [ticket_controller::class, "add"]);
+Route::get("/ticket-count/{id}", [ticket_controller::class, "count"]);
 Route::get("/ticket-view/{service}/{company}", [ticket_controller::class, "view"]);
 Route::get("/ticket-view-all/{company}", [ticket_controller::class, "viewAll"]);
 Route::get("/ticket-view-last/{company}", [ticket_controller::class, "viewLast"]);
