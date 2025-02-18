@@ -249,6 +249,25 @@ class ticket_controller extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function current(string $id)
+    {
+        $tb_assistance = tb_assistance:: query()
+        ->where('id_assistant', $id)
+        ->where('id_state', "3")
+        ->latest()
+        ->first();
+
+        $tb_ticket = tb_ticket:: findorfail($tb_assistance -> id_ticket);
+
+        return [
+            'id_ref' => $tb_ticket -> id,
+            'ref' => $tb_ticket -> ref,
+        ];
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
     public function count(string $id)
     {
         $result = tb_session:: query()

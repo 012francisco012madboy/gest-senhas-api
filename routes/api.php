@@ -62,3 +62,4 @@ Route::get("/ticket-view-all/{company}", [ticket_controller::class, "viewAll"]);
 Route::get("/ticket-view-last/{company}", [ticket_controller::class, "viewLast"]);
 Route::get("/ticket-call-next/{service}/{assistant}", [ticket_controller::class, "next"]);
 Route::put("/ticket-call-finished/{id}", [ticket_controller::class, "finished"]);
+Route::get("/ticket-call-current/{id}", [ticket_controller::class, "current"]);
