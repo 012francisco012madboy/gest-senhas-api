@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\tb_service;
+use App\Models\tb_front_desk;
+use App\Models\tb_user_assistant;
 
 class service_controller extends Controller
 {
@@ -41,6 +43,55 @@ class service_controller extends Controller
         ->where('id_company', $id)
         ->where('id_state', '1')
         ->get();
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function available(string $id)
+    {
+        $tb_front_desks = tb_front_desk:: query()
+        ->join('tb_counters as TC', 'TC.id', '=', 'tb_front_desks.id_counter')
+        ->join('tb_services as TS', 'TS.id', '=', 'tb_front_desks.id_service')
+        ->join('tb_user_assistants as TUA', 'TUA.id_front_desk', '=', 'tb_front_desks.id')
+        ->where('TUA.id_state', '1')
+        ->where('tb_front_desks.id_state', '1')
+        ->where('TC.id_company', $id)
+        ->where('TS.id_company', $id)
+        ->select(
+            'tb_front_desks.id as id_front_desk',
+            'TC.id as id_counter',
+            'TC.ref',
+            'TS.id as id_service',
+            'TS.name as service'
+        )
+        ->get();
+
+        $response = [];
+        $service = [];
+
+        foreach($tb_front_desks as $tb_front_desk){
+            $tb_user_assistant = tb_user_assistant:: query()
+            ->where('id_front_desk', $tb_front_desk -> id)
+            ->where('id_state', '1')
+            ->latest()
+            ->first();
+
+            if(!$tb_user_assistant){
+                if (!isset($service[$tb_front_desk->id_service])) {
+                    $service[$tb_front_desk->id_service] = [
+                        'id_service' => $tb_front_desk->id_service
+                    ];
+
+                    $response[] = [
+                        'id' => $tb_front_desk->id_service,
+                        'name' => $tb_front_desk->service,
+                    ];
+                }
+            }
+        }
+
+        return $response;
     }
 
     /**
@@ -93,7 +144,7 @@ class service_controller extends Controller
 
             return response([
                 'message' => "Serviço não encontrado"
-            ], 200);
+            ], 400);
         }
     }
 
@@ -116,7 +167,7 @@ class service_controller extends Controller
         else{
             return response([
                 'message' => "Serviço não encontrado"
-            ], 200);
+            ], 400);
         }
     }
 }

@@ -35,6 +35,7 @@ Route::get("/service-count/{id}", [service_controller::class, "count"]);
 Route::get("/service-show/{id}", [service_controller::class, "show"]);
 Route::put("/service-update/{id}", [service_controller::class, "update"]);
 Route::put("/service-destroy/{id}", [service_controller::class, "destroy"]);
+Route::get("/service-available/{id}", [service_controller::class, "available"]);
 
 /* BALCÃO */
 Route::post("/counter-add", [counter_controller::class, "add"]);

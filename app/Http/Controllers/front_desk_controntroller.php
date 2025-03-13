@@ -54,7 +54,7 @@ class front_desk_controntroller extends Controller
 
             return response([
                 'message' => 'Serviço não encontrado'
-            ], 200);
+            ], 400);
         }
     }
 
@@ -89,7 +89,7 @@ class front_desk_controntroller extends Controller
 
             if(!$tb_user_assistant){
                 $response[] = [
-                    'id_counter' => $tb_front_desk -> id_front_desk,
+                    'id_front_desk' => $tb_front_desk -> id_front_desk,
                     'id_counter' => $tb_front_desk -> id_counter,
                     'ref' => $tb_front_desk -> ref,
                     'id_service' => $tb_front_desk -> id_service,

@@ -62,6 +62,7 @@ class counter_controller extends Controller
 
             $tb_user_assistant = tb_user_assistant:: query()
             ->where('id_front_desk', $tb_front_desk ? $tb_front_desk -> id : '0')
+            ->where('id_state', '1')
             ->latest() -> first();
 
             $tb_user = tb_user:: query()
@@ -73,7 +74,7 @@ class counter_controller extends Controller
                 'ref' => $tb_counter -> ref,
                 'id_service' => $tb_service ? $tb_service -> id : null,
                 'service' => $tb_service ? $tb_service -> name : null,
-                'id_user' => $tb_user ? $tb_user -> id : null,
+                'id_user' => $tb_user_assistant ? $tb_user_assistant -> id : null,
                 'user' => $tb_user ? $tb_user -> name : null,
             ];
         }
@@ -120,10 +121,9 @@ class counter_controller extends Controller
             }
         }
         else{
-
             return response([
                 'message' => 'Balcão não encontrado'
-            ], 200);
+            ], 400);
         }
     }
 
@@ -144,13 +144,24 @@ class counter_controller extends Controller
         ->where('id_state', '1')
         ->latest() -> first();
 
+        $tb_user_assistant = tb_user_assistant:: query()
+        ->where('id_front_desk', $tb_front_desk ? $tb_front_desk -> id : '0')
+        ->where('id_state', '1')
+        ->latest() -> first();
+
+        $tb_user = tb_user:: query()
+        ->where('id', $tb_user_assistant ? $tb_user_assistant -> id_user : '0')
+        ->latest() -> first();
 
         return [
             'id_counter' => $tb_counter -> id,
             'ref' => $tb_counter -> ref,
-            'id_service' => $tb_service -> id,
-            'service' => $tb_service -> name,
-            'id_front_desk' => $tb_front_desk -> id
+            'id_front_desk' => $tb_front_desk -> id,
+            'id_service' => $tb_service ? $tb_service -> id: null,
+            'service' => $tb_service ? $tb_service -> name : null,
+            'id_assistant' => $tb_user_assistant ? $tb_user_assistant -> id : null,
+            'id_user' => $tb_user ? $tb_user -> id : null,
+            'user' => $tb_user ? $tb_user -> name : null,
         ];
     }
 
@@ -162,19 +173,44 @@ class counter_controller extends Controller
         $tb_counter = tb_counter:: findorfail($id);
 
         if($tb_counter){
-            $tb_counter -> update([
-                'id_state' => "2"
-            ]);
+            $tb_front_desk = tb_front_desk:: query()
+            ->where('id_counter', $tb_counter -> id)
+            ->where('id_state', '1')
+            ->latest() -> first();
 
-            return response([
-                'message' => 'Balcão eliminado com sucesso'
-            ], 200);
+            $tb_service = tb_service:: query()
+            ->where('id', $tb_front_desk ? $tb_front_desk -> id_service : '0')
+            ->where('id_state', '1')
+            ->latest() -> first();
+
+            $tb_user_assistant = tb_user_assistant:: query()
+            ->where('id_front_desk', $tb_front_desk ? $tb_front_desk -> id : '0')
+            ->where('id_state', '1')
+            ->latest() -> first();
+
+            $tb_user = tb_user:: query()
+            ->where('id', $tb_user_assistant ? $tb_user_assistant -> id_user : '0')
+            ->latest() -> first();
+
+            if(!$tb_service && !$tb_user){
+                $tb_counter -> update([
+                    'id_state' => "2"
+                ]);
+
+                return response([
+                    'message' => 'Balcão eliminado com sucesso'
+                ], 200);
+            }
+            else{
+                return response([
+                    'message' => 'Remova o serviço ou o funcionário antes de eliminar o balcão'
+                ], 400);
+            }
         }
         else{
-
             return response([
                 'message' => 'Balcão não encontrado'
-            ], 200);
+            ], 400);
         }
     }
 }

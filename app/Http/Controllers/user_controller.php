@@ -171,7 +171,7 @@ class user_controller extends Controller
 
             return response([
                 'message' => "Funcionário não encontrado"
-            ], 200);
+            ], 400);
         }
     }
 
@@ -195,7 +195,7 @@ class user_controller extends Controller
 
             return response([
                 'message' => "Funcionário não encontrado"
-            ], 200);
+            ], 400);
         }
     }
 
@@ -219,7 +219,7 @@ class user_controller extends Controller
 
             return response([
                 'message' => "Funcionário não encontrado"
-            ], 200);
+            ], 400);
         }
     }
 }

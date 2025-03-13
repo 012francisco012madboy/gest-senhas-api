@@ -173,20 +173,29 @@ class ticket_controller extends Controller
 
         try {
             $tb_ticket = tb_ticket:: query()
-            ->where('id_service', $service)
-            ->where('id_state', "1")
-            ->orderBy('updated_at', 'asc')
+            ->join('tb_sessions as TS', 'TS.id', '=', 'tb_tickets.id_session')
+            ->where('tb_tickets.id_service', $service)
+            ->where('tb_tickets.id_state', "1")
+            ->where('TS.id_state', "1")
+            ->select('tb_tickets.*')
+            ->orderBy('tb_tickets.updated_at', 'asc')
             ->first();
 
-            $tb_ticket -> update([
-                'id_state' => "2"
-            ]);
+            if($tb_ticket){
+                $ticket = tb_ticket::find($tb_ticket->id);
 
-            tb_assistance:: create([
-                'id_ticket' => $tb_ticket -> id,
-                'id_assistant' => $assistant,
-                'id_state' => "3"
-            ]);
+                if($ticket){
+                    $ticket -> update([
+                        'id_state' => "2"
+                    ]);
+
+                    tb_assistance:: create([
+                        'id_ticket' => $ticket -> id,
+                        'id_assistant' => $assistant,
+                        'id_state' => "3"
+                    ]);
+                }
+            }
 
             DB:: commit();
 

@@ -26,33 +26,17 @@ class user_assistant_controller extends Controller
             ], 201);
         }
         else{
-            return response([
-                'message' => 'Este balcão já está associado a um outro funcionário'
-            ], 400);
-        }
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function remove(Request $request, string $id)
-    {
-        $tb_user_assistant = tb_user_assistant:: findorfail($id);
-
-        if($tb_user_assistant){
-            $tb_user_assistant -> update([
-                'id_state' => "2"
-            ]);
-
-            return response([
-                'message' => 'Balcão desassociado ao funcionário'
-            ], 200);
-        }
-        else{
-
-            return response([
-                'message' => 'Serviço não encontrado'
-            ], 200);
+            if($result -> id_user == $request -> id_user)
+            {
+                return response([
+                    'message' => 'Balcão selecionado'
+                ], 201);
+            }
+            else{
+                return response([
+                    'message' => 'Este balcão já está associado a um outro funcionário'
+                ], 400);
+            }
         }
     }
 
@@ -80,5 +64,29 @@ class user_assistant_controller extends Controller
         )
         ->latest('tb_user_assistants.created_at')
         ->first();
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function remove(Request $request, string $id)
+    {
+        $tb_user_assistant = tb_user_assistant:: findorfail($id);
+
+        if($tb_user_assistant){
+            $tb_user_assistant -> update([
+                'id_state' => "2"
+            ]);
+
+            return response([
+                'message' => 'Balcão desassociado ao funcionário'
+            ], 200);
+        }
+        else{
+
+            return response([
+                'message' => 'Balcão não encontrado'
+            ], 400);
+        }
     }
 }
