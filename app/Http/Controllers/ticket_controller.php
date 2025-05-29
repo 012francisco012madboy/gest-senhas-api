@@ -154,6 +154,7 @@ class ticket_controller extends Controller
             ->join('tb_front_desks as TFD', 'TFD.id', '=', 'TUA.id_front_desk')
             ->join('tb_counters as TC', 'TC.id', '=', 'TFD.id_counter')
             ->where('TA.id_state', '3')
+            ->where('TC.id_company', $company)
             ->orderBy('tb_tickets.updated_at', 'desc')
             ->select(
                 'tb_tickets.ref',

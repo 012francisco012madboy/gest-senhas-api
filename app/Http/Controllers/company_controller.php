@@ -26,6 +26,22 @@ class company_controller extends Controller
         DB::beginTransaction();
 
         try {
+            $tb_company = tb_company::where('email', $request -> email_company)->first();
+
+            if($tb_company)
+            {
+                return response([
+                    'message' => "Já existe uma empresa com este e-mail"
+                ], 400);
+            }
+            $tb_user = tb_user::where('email', $request -> email_user)->first();
+
+            if($tb_user)
+            {
+                return response([
+                    'message' => "Já existe uma conta com este e-mail"
+                ], 400);
+            }
             $tb_company = tb_company::create([
                 'name' => $request -> name_company,
                 'email' => $request -> email_company,
