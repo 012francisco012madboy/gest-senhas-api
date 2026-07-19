@@ -5,13 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class tb_front_desk extends Model
+class tb_daily extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'id_service',
-        'id_counter',
-        'id_state'
+        'day'
     ];
 }

@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('tb_tickets', function (Blueprint $table) {
             $table->id();
-            $table->string('ref');
-            $table->unsignedBigInteger('id_service');
-            $table->unsignedBigInteger('id_session');
-            $table->unsignedBigInteger('id_state')->default('1');
+            $table->string('reference');
+            $table->unsignedBigInteger('service_id');
+            $table->unsignedBigInteger('daily_id');
+            $table->boolean('state')->default(true);
+            $table->boolean('priority')->default(false);
             $table->timestamps();
 
-            $table->foreign('id_service')->references('id')->on('tb_services')->onDelete('cascade');
-            $table->foreign('id_session')->references('id')->on('tb_sessions')->onDelete('cascade');
-            $table->foreign('id_state')->references('id')->on('tb_states')->onDelete('cascade');
+            $table->foreign('service_id')->references('id')->on('tb_services')->onDelete('cascade');
+            $table->foreign('daily_id')->references('id')->on('tb_dailies')->onDelete('cascade');
         });
     }
 

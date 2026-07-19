@@ -4,9 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\tb_service;
 
-class tb_ticket extends Model
+class tb_ticket_history extends Model
 {
     use HasFactory;
 
@@ -17,10 +16,8 @@ class tb_ticket extends Model
     }
 
     protected $fillable = [
-        'reference',
-        'service_id',
-        'daily_id',
-        'state',
-        'priority'
+        'ticket_id',
+        'counter_id',
+        'state'
     ];
 }

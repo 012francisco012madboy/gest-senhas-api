@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tb_counters', function (Blueprint $table) {
+        Schema::create('tb_counter_services', function (Blueprint $table) {
             $table->id();
-            $table->string('reference', 5);
+            $table->unsignedBigInteger('service_id');
+            $table->unsignedBigInteger('counter_id');
             $table->boolean('state')->default(true);
             $table->timestamps();
+
+            $table->foreign('service_id')->references('id')->on('tb_services')->onDelete('cascade');
+            $table->foreign('counter_id')->references('id')->on('tb_counters')->onDelete('cascade');
         });
     }
 
@@ -24,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tb_counters');
+        Schema::dropIfExists('tb_counter_services');
     }
 };

@@ -14,12 +14,9 @@ return new class extends Migration
         Schema::create('tb_services', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50);
-            $table->unsignedBigInteger('id_state')->default('1');
-            $table->unsignedBigInteger('id_company');
+            $table->string('prefix', 5);
+            $table->boolean('state')->default(true);
             $table->timestamps();
-
-            $table->foreign('id_state')->references('id')->on('tb_states')->onDelete('cascade');
-            $table->foreign('id_company')->references('id')->on('tb_companies')->onDelete('cascade');
         });
     }
 

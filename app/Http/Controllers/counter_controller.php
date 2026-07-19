@@ -3,214 +3,161 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\tb_counter;
-use App\Models\tb_service;
-use App\Models\tb_user;
-use App\Models\tb_front_desk;
-use App\Models\tb_user_assistant;
 
 class counter_controller extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function add(Request $request)
+    public function index()
     {
+        $auth = auth()->user();
+
+        if($auth->role_id != '1' && $auth->role_id != '2'){
+            return response([
+                'message' => 'Usuário náo permitido',
+            ], 409);
+        }
+
+        $tb_counters = tb_counter:: query()
+        ->where('state', true)
+        ->select(
+            'id',
+            'reference'
+        )
+        ->get();
+
+        return $tb_counters;
+    }
+
+    public function active()
+    {
+        $auth = auth()->user();
+
+        if($auth->role_id != '1' && $auth->role_id != '2'){
+            return response([
+                'message' => 'Usuário náo permitido',
+            ], 409);
+        }
+
+        $tb_counters = tb_counter:: query()
+        ->where('state', true)
+        ->whereHas('counterService')
+        ->select(
+            'id',
+            'reference'
+        )
+        ->get();
+
+        return $tb_counters;
+    }
+
+    public function store(Request $request)
+    {
+        $auth = auth()->user();
+
+        if($auth->role_id != '1' && $auth->role_id != '2'){
+            return response([
+                'message' => 'Usuário náo permitido',
+            ], 409);
+        }
+
+        $request->validate([
+            'reference' => [
+                'required', 'string', 'max:1',
+                Rule::unique('tb_counters', 'reference')->where(fn ($query) => $query->where('state', true))
+            ]
+        ], [
+            'reference.required' => 'A referência do balcão é obrigatória',
+            'reference.string' => 'Formato da referência inválida',
+            'reference.max' => 'A referência pode ter apenas 1 dígito',
+            'reference.unique' => 'A referência já pertence a um balcão'
+        ]);
+        
+        $reference = strtoupper($request->reference);
+
+        tb_counter:: create([
+            'reference' => $reference
+        ]);
+
+        return response([
+            'message' => "Balcão adicionado com sucesso"
+        ], 200);
+    } 
+
+    public function update(Request $request)
+    {
+        $auth = auth()->user();
+
+        if($auth->role_id != '1' && $auth->role_id != '2'){
+            return response([
+                'message' => 'Usuário náo permitido',
+            ], 409);
+        }
+
+        $request->validate([
+            'reference' => 'required|string'
+        ], [
+            'reference.required' => 'A referência do balcão é obrigatória',
+            'reference.string' => 'Formato da referência inválida'
+        ]);
+
         $counter = tb_counter:: query()
-        ->where('ref', $request -> ref)
-        ->where('id_company', $request -> id_company)
-        ->where('id_state', '1')
+        ->where("id", $request->id)
+        ->where('state', true)
         ->latest()
         ->first();
 
         if(!$counter){
-            tb_counter:: create($request -> all());
-
             return response([
-                'message' => 'Balcão adiciaonado com sucesso'
-            ], 201);
+                'message' => "Serviço não encontrado"
+            ], 404);
         }
-        else{
+
+        if($counter->reference == $request->reference && $counter->id != $request->id){
             return response([
-                'message' => 'Já existe um balcão com este nome'
+                'message' => "Existe um balcão com esta referência"
             ], 400);
         }
+
+        $reference = strtoupper($request->reference);
+
+        $counter->update([
+            'reference' => $reference
+        ]);
+
+        return response([
+            'message' => "Balcão atualizado com sucesso"
+        ], 200);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function view(string $id)
+    public function delete(Request $request)
     {
-        $tb_counters = tb_counter:: query()
-        ->where('id_company', $id)
-        ->where('id_state', '1')
-        ->get();
+        $auth = auth()->user();
 
-        $response = [];
-
-        foreach($tb_counters as $tb_counter){
-            $tb_front_desk = tb_front_desk:: query()
-            ->where('id_counter', $tb_counter -> id)
-            ->where('id_state', '1')
-            ->latest() -> first();
-
-            $tb_service = tb_service:: query()
-            ->where('id', $tb_front_desk ? $tb_front_desk -> id_service : '0')
-            ->where('id_state', '1')
-            ->latest() -> first();
-
-            $tb_user_assistant = tb_user_assistant:: query()
-            ->where('id_front_desk', $tb_front_desk ? $tb_front_desk -> id : '0')
-            ->where('id_state', '1')
-            ->latest() -> first();
-
-            $tb_user = tb_user:: query()
-            ->where('id', $tb_user_assistant ? $tb_user_assistant -> id_user : '0')
-            ->latest() -> first();
-
-            $response[] = [
-                'id_counter' => $tb_counter -> id,
-                'ref' => $tb_counter -> ref,
-                'id_service' => $tb_service ? $tb_service -> id : null,
-                'service' => $tb_service ? $tb_service -> name : null,
-                'id_user' => $tb_user_assistant ? $tb_user_assistant -> id : null,
-                'user' => $tb_user ? $tb_user -> name : null,
-            ];
-        }
-
-        return $response;
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function count(string $id)
-    {
-        return tb_counter:: query()
-        ->where('id_company', $id)
-        ->where('id_state', '1')
-        ->count();
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $tb_counter = tb_counter:: findorfail($id);
-
-        if($tb_counter){
-            $counter = tb_counter:: query()
-            ->where('ref', $request -> ref)
-            ->where('id_company', $request -> id_company)
-            ->latest()
-            ->first();
-
-            if(!$counter){
-                $tb_counter -> update($request -> all());
-
-                return response([
-                    'message' => 'Balcão atualizado com sucesso'
-                ], 200);
-            }
-            else{
-                return response([
-                    'message' => 'Já existe um balcão com este nome'
-                ], 400);
-            }
-        }
-        else{
+        if($auth->role_id != '1' && $auth->role_id != '2'){
             return response([
-                'message' => 'Balcão não encontrado'
-            ], 400);
+                'message' => 'Usuário náo permitido',
+            ], 409);
         }
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $tb_counter = tb_counter:: findorfail($id);
+        $counter = tb_counter:: query()
+        ->where("id", $request->id)
+        ->where('state', true)
+        ->latest()
+        ->first();
 
-        $tb_front_desk = tb_front_desk:: query()
-        ->where('id_counter', $tb_counter -> id)
-        ->where('id_state', '1')
-        ->latest() -> first();
-
-        $tb_service = tb_service:: query()
-        ->where('id', $tb_front_desk ? $tb_front_desk -> id_service : '0')
-        ->where('id_state', '1')
-        ->latest() -> first();
-
-        $tb_user_assistant = tb_user_assistant:: query()
-        ->where('id_front_desk', $tb_front_desk ? $tb_front_desk -> id : '0')
-        ->where('id_state', '1')
-        ->latest() -> first();
-
-        $tb_user = tb_user:: query()
-        ->where('id', $tb_user_assistant ? $tb_user_assistant -> id_user : '0')
-        ->latest() -> first();
-
-        return [
-            'id_counter' => $tb_counter -> id,
-            'ref' => $tb_counter -> ref,
-            'id_front_desk' => $tb_front_desk -> id,
-            'id_service' => $tb_service ? $tb_service -> id: null,
-            'service' => $tb_service ? $tb_service -> name : null,
-            'id_assistant' => $tb_user_assistant ? $tb_user_assistant -> id : null,
-            'id_user' => $tb_user ? $tb_user -> id : null,
-            'user' => $tb_user ? $tb_user -> name : null,
-        ];
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        $tb_counter = tb_counter:: findorfail($id);
-
-        if($tb_counter){
-            $tb_front_desk = tb_front_desk:: query()
-            ->where('id_counter', $tb_counter -> id)
-            ->where('id_state', '1')
-            ->latest() -> first();
-
-            $tb_service = tb_service:: query()
-            ->where('id', $tb_front_desk ? $tb_front_desk -> id_service : '0')
-            ->where('id_state', '1')
-            ->latest() -> first();
-
-            $tb_user_assistant = tb_user_assistant:: query()
-            ->where('id_front_desk', $tb_front_desk ? $tb_front_desk -> id : '0')
-            ->where('id_state', '1')
-            ->latest() -> first();
-
-            $tb_user = tb_user:: query()
-            ->where('id', $tb_user_assistant ? $tb_user_assistant -> id_user : '0')
-            ->latest() -> first();
-
-            if(!$tb_service && !$tb_user){
-                $tb_counter -> update([
-                    'id_state' => "2"
-                ]);
-
-                return response([
-                    'message' => 'Balcão eliminado com sucesso'
-                ], 200);
-            }
-            else{
-                return response([
-                    'message' => 'Remova o serviço ou o funcionário antes de eliminar o balcão'
-                ], 400);
-            }
-        }
-        else{
+        if(!$counter){
             return response([
-                'message' => 'Balcão não encontrado'
-            ], 400);
+                'message' => "Balcão não encontrado"
+            ], 404);
         }
-    }
+
+        $counter->update([
+            'state' => false
+        ]);
+
+        return response([
+            'message' => "Balcão eliminado com sucesso"
+        ], 200);
+    } 
 }

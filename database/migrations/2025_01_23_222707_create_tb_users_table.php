@@ -13,18 +13,24 @@ return new class extends Migration
     {
         Schema::create('tb_users', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 25);
-            $table->string('email', 50);
-            $table->string('password', 15);
-            $table->unsignedBigInteger('id_type');
-            $table->unsignedBigInteger('id_state')->default('1');
-            $table->unsignedBigInteger('id_company')->default('1');
+            $table->string('name', 50);
+            $table->string('email', 50)->unique();
+            $table->string('password');
+            $table->boolean('state')->default(true);
+            $table->unsignedBigInteger('role_id');
             $table->timestamps();
 
-            $table->foreign('id_type')->references('id')->on('tb_types')->onDelete('cascade');
-            $table->foreign('id_state')->references('id')->on('tb_states')->onDelete('cascade');
-            $table->foreign('id_company')->references('id')->on('tb_companies')->onDelete('cascade');
+            $table->foreign('role_id')->references('id')->on('tb_roles')->onDelete('cascade');
         });
+
+        DB::table('tb_users')->insert([[
+            'name' => 'Super User',
+            'email' => 'su@system.in',
+            'password' => bcrypt('12345678'),
+            'role_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]]);
     }
 
     /**

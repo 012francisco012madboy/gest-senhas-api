@@ -9,9 +9,14 @@ class tb_service extends Model
 {
     use HasFactory;
 
+    public function counterService()
+    {
+        return $this->hasMany(tb_counter_service::class, 'service_id')->where('state', true);
+    }
+
     protected $fillable = [
         'name',
-        'id_state',
-        'id_company'
+        'prefix',
+        'state'
     ];
 }

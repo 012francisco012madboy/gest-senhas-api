@@ -2,65 +2,57 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\company_controller;
+
+use App\Http\Controllers\auth_controller;
 use App\Http\Controllers\user_controller;
-use App\Http\Controllers\service_controller;
 use App\Http\Controllers\counter_controller;
-use App\Http\Controllers\front_desk_controntroller;
-use App\Http\Controllers\user_assistant_controller;
+use App\Http\Controllers\service_controller;
+use App\Http\Controllers\counter_service_controller;
 use App\Http\Controllers\ticket_controller;
+use App\Http\Controllers\extra_controller;
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+/* AUTH */
+Route::post("/login", [auth_controller::class, "login"]);
 
-/* COMPANY */
-Route::post("/sign-up", [company_controller::class, "signup"]);
-
-/* USUÁRIO */
-Route::post("/user-add", [user_controller::class, "add"]);
-Route::post("/user-signup", [user_controller::class, "signup"]);
-Route::post("/user-signin", [user_controller::class, "signin"]);
-Route::get("/user-view/{id}", [user_controller::class, "view"]);
-Route::get("/user-show/{id}", [user_controller::class, "show"]);
-Route::get("/user-count/{id}", [user_controller::class, "count"]);
-Route::put("/user-update/{id}", [user_controller::class, "update"]);
-Route::put("/user-destroy/{id}", [user_controller::class, "destroy"]);
-Route::put("/user-reset/{id}", [user_controller::class, "reset"]);
-
-/* SERVIÇO */
-Route::post("/service-add", [service_controller::class, "add"]);
-Route::get("/service-view/{id}", [service_controller::class, "view"]);
-Route::get("/service-count/{id}", [service_controller::class, "count"]);
-Route::get("/service-show/{id}", [service_controller::class, "show"]);
-Route::put("/service-update/{id}", [service_controller::class, "update"]);
-Route::put("/service-destroy/{id}", [service_controller::class, "destroy"]);
-Route::get("/service-available/{id}", [service_controller::class, "available"]);
-
-/* BALCÃO */
-Route::post("/counter-add", [counter_controller::class, "add"]);
-Route::get("/counter-view/{id}", [counter_controller::class, "view"]);
-Route::get("/counter-count/{id}", [counter_controller::class, "count"]);
-Route::get("/counter-show/{id}", [counter_controller::class, "show"]);
-Route::put("/counter-update/{id}", [counter_controller::class, "update"]);
-Route::put("/counter-destroy/{id}", [counter_controller::class, "destroy"]);
-
-/* BALCÃO & SERVIÇO */
-Route::post("/front-desk-add", [front_desk_controntroller::class, "add"]);
-Route::get("/front-desk-view/{id}", [front_desk_controntroller::class, "view"]);
-Route::put("/front-desk-remove/{id}", [front_desk_controntroller::class, "remove"]);
-
-/* BALCÃO & USUÁRIO */
-Route::post("/user-assistant-add", [user_assistant_controller::class, "add"]);
-Route::put("/user-assistant-remove/{id}", [user_assistant_controller::class, "remove"]);
-Route::get("/user-assistant-view/{user}/{desk}", [user_assistant_controller::class, "view"]);
-
+/* SERVICE */
+Route::get("/service/active", [service_controller::class, "active"]);
+    
 /* TICKET */
-Route::post("/ticket-add", [ticket_controller::class, "add"]);
-Route::get("/ticket-count/{id}", [ticket_controller::class, "count"]);
-Route::get("/ticket-view/{service}/{company}", [ticket_controller::class, "view"]);
-Route::get("/ticket-view-all/{company}", [ticket_controller::class, "viewAll"]);
-Route::get("/ticket-view-last/{company}", [ticket_controller::class, "viewLast"]);
-Route::get("/ticket-call-next/{service}/{assistant}", [ticket_controller::class, "next"]);
-Route::put("/ticket-call-finished/{id}", [ticket_controller::class, "finished"]);
-Route::get("/ticket-call-current/{id}", [ticket_controller::class, "current"]);
+Route::get("/ticket", [ticket_controller::class, "index"]);
+Route::post("/ticket", [ticket_controller::class, "store"]);
+
+
+Route::middleware('auth:api')->group(function (){
+    /* AUTH */
+    Route::get("/user", [auth_controller::class, "index"]);
+    Route::post("/user/out", [auth_controller::class, "out"]);
+    Route::get("/user/refresh", [auth_controller::class, "refresh"]);
+    
+    /* USER */
+    Route::post("/user", [user_controller::class, "store"]);
+    Route::patch("/user", [user_controller::class, "update"]);
+    Route::get("/user/list", [user_controller::class, "list"]);
+    Route::delete("/user/{id}", [user_controller::class, "delete"]);
+
+    /* SERVICE */
+    Route::get("/service", [service_controller::class, "index"]);
+    Route::post("/service", [service_controller::class, "store"]);
+    Route::patch("/service", [service_controller::class, "update"]);
+    Route::delete("/service/{id}", [service_controller::class, "delete"]);
+
+    /* BALCÃO */
+    Route::get("/counter", [counter_controller::class, "index"]);
+    Route::get("/counter/active", [counter_controller::class, "active"]);
+    Route::post("/counter", [counter_controller::class, "store"]);
+    Route::patch("/counter", [counter_controller::class, "update"]);
+    Route::delete("/counter/{id}", [counter_controller::class, "delete"]);
+    
+    /* COUNTER SERVICE */    
+    Route::get("/counter/service", [counter_service_controller::class, "index"]);
+    Route::post("/counter/service", [counter_service_controller::class, "store"]);
+    Route::patch("/counter/service", [counter_service_controller::class, "update"]);
+    Route::delete("/counter/service/{id}", [counter_service_controller::class, "delete"]);
+    
+    /* EXTRA */    
+    Route::get("/count", [extra_controller::class, "count"]);
+});

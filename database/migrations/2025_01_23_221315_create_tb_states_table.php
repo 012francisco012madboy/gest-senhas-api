@@ -19,39 +19,13 @@ return new class extends Migration
         });
 
         DB::table('tb_states')->insert([
-            'name' => 'Activo',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('tb_states')->insert([
-            'name' => 'Desativado',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('tb_states')->insert([
-            'name' => 'Em atendimento',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('tb_states')->insert([
-            'name' => 'Voltou na fila',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('tb_states')->insert([
-            'name' => 'Não compareceu',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('tb_states')->insert([
-            'name' => 'Finalizado',
-            'created_at' => now(),
-            'updated_at' => now()
+            ['name' => 'Ativo', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Inativo', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Atendendo', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Retornado', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Ausente', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Transferido', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Concluído', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 

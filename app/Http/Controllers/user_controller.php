@@ -2,224 +2,183 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
+use Illuminate\Support\Facades\Hash;
 use App\Models\tb_user;
-use App\Models\tb_type;
+use App\Services\validation_service;
 
 class user_controller extends Controller
 {
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function add(Request $request)
+    public function store(Request $request, validation_service $validator)
     {
-        $tb_user = tb_user::where(['email' => $request -> email])->first();
+        $auth = auth()->user();
 
-        if($tb_user)
-        {
+        if($auth->role_id != '1' && $auth->role_id != '2'){
             return response([
-                'message' => "Já tem um funcionário com este email"
-            ], 400);
+                'message' => 'Usuário náo permitido',
+            ], 409);
         }
-        else{
-            tb_user:: create([
-                'name' => $request -> name,
-                'email' => $request -> email,
-                'password' =>'12345678',
-                'id_type' => $request -> id_type,
-                'id_company' => $request -> id_company
-            ]);
 
-            return response([
-                'message' => "Funcionário adicionado com sucesso"
-            ], 201);
-        }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function signup(Request $request)
-    {
-        $tb_user = tb_user::where(['email' => $request -> email])->first();
-
-        if($tb_user)
-        {
-            return response([
-                'message' => "Já existe um usuário com este email"
-            ], 400);
-        }
-        else{
-            tb_user:: create($request -> all());
-
-            return response([
-                'message' => "Conta criada com sucesso"
-            ], 201);
-        }
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function signin(Request $request)
-    {
-        $request -> validate([
-            'email' => 'required|string',
-            'password' => 'required|string'
+        $request->validate([
+            'email' => [
+                'email',
+                'unique:tb_users,email'
+            ]
+        ], [
+            'email.email' => 'O email é inválido.',
+            'email.unique' => 'Já existe uma conta com este e-mail.'
         ]);
 
-        $tb_user = tb_user::where(['email' => $request -> email])->first();
+        $name = $request -> name;
+        $email = $request -> email;
 
-        if(!$tb_user || $request -> password != $tb_user->password)
-        {
-            return response([
-                'message' => "Email ou senha inválida"
-            ], 400);
-        }
+        if (($result = $validator->Name_Validate($name)) !== true) return $result;
+        if (($result = $validator->Email_Validate($email)) !== true) return $result;
+        if (($result = $validator->Password_Validate($request -> password, $request -> passwordConfirm)) !== true) return $result;
 
-        if($tb_user){
-            $response = [
-                'user' => $tb_user,
-                'message' => "Logado com sucesso..."
-            ];
-        }
-        else{
-            $response = [
-                'message' => "Email ou senha inválida"
-            ];
-        }
+        $role_id = $request -> idRole == "2" ? "2" : "3";
 
-        return response($response, 200);
-    }
+        $tb_user = tb_user::create([
+            'name' => $name,
+            'email' => $email,
+            'role_id' => $role_id,
+            'password' => bcrypt($request -> password)
+        ]);
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function view(string $id)
-    {
-        $tb_users = tb_user:: query()
-        ->where('id_company', $id)
-        ->where('id_state', '1')
-        ->get();
-
-        $response = [];
-
-        foreach($tb_users as $tb_user){
-            $tb_type = tb_type:: findorfail($tb_user -> id_type);
-
-            $response[] = [
-                'id' => $tb_user -> id,
-                'name' => $tb_user-> name,
-                'email' => $tb_user-> email,
-                'id_type' => $tb_user-> id_type,
-                'type' => $tb_type -> name,
-                'id_state' => $tb_user-> id_state,
-                'id_company' => $tb_user-> id_company
-            ];
-        }
+        $response = [
+            'message' => "Usuário adicionado com sucesso"
+        ];
 
         return $response;
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function list()
     {
-        $tb_user = tb_user:: findorfail($id);
+        $auth = auth()->user();
 
-        $tb_type = tb_type:: findorfail($tb_user -> id_type);
+        if($auth->role_id != '1' && $auth->role_id != '2'){
+            return response([
+                'message' => 'Usuário náo permitido',
+            ], 409);
+        }
 
-        return [
-            'id' => $tb_user -> id,
-            'name' => $tb_user-> name,
-            'email' => $tb_user-> email,
-            'id_type' => $tb_user-> id_type,
-            'type' => $tb_type -> name,
-            'id_state' => $tb_user-> id_state,
-            'id_company' => $tb_user-> id_company
-        ];
+        $tb_users = tb_user::query()
+        ->with(['role'])
+        ->where('state', true)
+        ->orderBy('name')
+        ->get()
+        ->map(function ($user){
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role->name
+            ];
+        });
+        
+        return $tb_users;
     }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function count(string $id)
+    
+    public function update(Request $request, validation_service $validator)
     {
-        return $tb_users = tb_user:: query()
-        ->where('id_company', $id)
-        ->where('id_state', '1')
-        ->count();
+        $auth = auth()->user();
+
+        if($auth->role_id != '1' && $auth->role_id != '2'){
+            return response([
+                'message' => 'Usuário náo permitido',
+            ], 409);
+        }
+
+        $name = $request -> name;
+        $email = $request -> email;
+
+        if (($result = $validator->Name_Validate($name)) !== true) return $result;
+        if (($result = $validator->Email_Validate($email)) !== true) return $result;
+        
+        $tb_user = tb_user::query()
+        ->where('id', $request->id)
+        ->where('state', true)
+        ->latest()
+        ->first();
+
+        if(!$tb_user){
+            return response([
+                'message' => 'Usuário não encontrado',
+            ], 409);
+        }
+
+        $tb_user->update([
+            'name' => $name,
+            'email' => $email
+        ]);
+
+        return response()->json([
+            'message' => "Usuário atualizados com sucesso"
+        ], 200);
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    
+    public function delete(string $id)
     {
-        $tb_user = tb_user:: findorfail($id);
+        $auth = auth()->user();
 
-        if($tb_user){
-
-            $tb_user -> update($request -> all());
-
+        if($auth->role_id != '1' && $auth->role_id != '2'){
             return response([
-                'message' => "Funcionário atualizado com sucesso"
-            ], 200);
+                'message' => 'Usuário náo permitido',
+            ], 409);
         }
-        else{
+        
+        $tb_user = tb_user::query()
+        ->where('id', $id)
+        ->where('state', true)
+        ->latest()
+        ->first();
 
+        if(!$tb_user){
             return response([
-                'message' => "Funcionário não encontrado"
-            ], 400);
+                'message' => 'Usuário não encontrado',
+            ], 409);
         }
+
+        $tb_user->update([
+            'state' => false
+        ]);
+
+        return response()->json([
+            'message' => "Usuário eliminado com sucesso"
+        ], 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    
+    public function password(Request $request)
     {
-        $tb_user = tb_user:: findorfail($id);
+        $auth = auth()->user();
 
-        if($tb_user){
-            $tb_user -> update([
-                'id_state' => "2"
-            ]);
-
+        if($auth->role_id != '1' && $auth->role_id != '2'){
             return response([
-                'message' => "Funcionário eliminado com sucesso"
-            ], 200);
+                'message' => 'Usuário náo permitido',
+            ], 409);
         }
-        else{
+        
+        $tb_user = tb_user::query()
+        ->where('id', $request->id)
+        ->where('state', true)
+        ->latest()
+        ->first();
 
+        if(!$tb_user){
             return response([
-                'message' => "Funcionário não encontrado"
-            ], 400);
+                'message' => 'Usuário não encontrado',
+            ], 409);
         }
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function reset(string $id)
-    {
-        $tb_user = tb_user:: findorfail($id);
+        $tb_user->update([
+            'password' => bcrypt('12345678')
+        ]);
 
-        if($tb_user){
-            $tb_user -> update([
-                'password' => "12345678"
-            ]);
-
-            return response([
-                'message' => "Senha redefinida com sucesso"
-            ], 200);
-        }
-        else{
-
-            return response([
-                'message' => "Funcionário não encontrado"
-            ], 400);
-        }
+        return response()->json([
+            'message' => "Palavra passe alterado com sucesso"
+        ], 200);
     }
 }

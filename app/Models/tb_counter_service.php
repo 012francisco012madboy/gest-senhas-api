@@ -5,10 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\tb_service;
+use App\Models\tb_counter;
 
-class tb_ticket extends Model
+class tb_counter_service extends Model
 {
     use HasFactory;
+
+    public function counter()
+    {
+        return $this->belongsTo(tb_counter::class, 'counter_id')
+        ->where('state', true)->select('id', 'reference');
+    }
 
     public function service()
     {
@@ -17,10 +24,8 @@ class tb_ticket extends Model
     }
 
     protected $fillable = [
-        'reference',
         'service_id',
-        'daily_id',
-        'state',
-        'priority'
+        'counter_id',
+        'state'
     ];
 }

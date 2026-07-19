@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tb_companies', function (Blueprint $table) {
+        Schema::create('tb_dailies', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 25);
-            $table->string('email', 50);
-            $table->unsignedBigInteger('id_state')->default('1');
+            $table->date('day')->unique();
             $table->timestamps();
-
-            $table->foreign('id_state')->references('id')->on('tb_states')->onDelete('cascade');
         });
     }
 
@@ -27,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tb_companies');
+        Schema::dropIfExists('tb_dailies');
     }
 };

@@ -11,22 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tb_types', function (Blueprint $table) {
+        Schema::create('tb_roles', function (Blueprint $table) {
             $table->id();
             $table->string('name', 25);
             $table->timestamps();
         });
 
-        DB::table('tb_types')->insert([
-            'name' => 'Administrador',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('tb_types')->insert([
-            'name' => 'Funcionário',
-            'created_at' => now(),
-            'updated_at' => now()
+        DB::table('tb_roles')->insert([
+            ['name' => 'SU', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Admin', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Atendente', 'created_at' => now(), 'updated_at' => now()]
         ]);
     }
 
@@ -35,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tb_types');
+        Schema::dropIfExists('tb_roles');
     }
 };
