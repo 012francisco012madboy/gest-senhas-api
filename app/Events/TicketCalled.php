@@ -6,21 +6,21 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class TicketUpdated
+class TicketCalled implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(
-        public string $company,
-        public array $ticket
-    ) {}
+    public function __construct()
+    {
+        //
+    }
 
     /**
      * Get the channels the event should broadcast on.
@@ -29,11 +29,8 @@ class TicketUpdated
      */
     public function broadcastOn(): array
     {
-        return [new Channel('company.' . $this->company . '.tickets')];
-    }
-
-    public function broadcastAs(): string
-    {
-        return 'ticket.updated';
+        return [
+            new Channel('testes'),
+        ];
     }
 }

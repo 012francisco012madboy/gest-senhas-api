@@ -9,15 +9,20 @@ class tb_ticket_history extends Model
 {
     use HasFactory;
 
-    public function service()
+    public function counter()
     {
-        return $this->belongsTo(tb_service::class, 'service_id')
-        ->where('state', true)->select('id', 'name');
+        return $this->belongsTo(tb_counter::class, 'counter_id')
+        ->where('state', true)->select(['id', 'reference']);
+    }
+    public function ticket()
+    {
+        return $this->belongsTo(tb_ticket::class, 'ticket_id')->select(['id', 'reference']);
     }
 
     protected $fillable = [
         'ticket_id',
         'counter_id',
-        'state'
+        'daily_id',
+        'state_id'
     ];
 }

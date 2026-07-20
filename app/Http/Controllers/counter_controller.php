@@ -33,12 +33,6 @@ class counter_controller extends Controller
     {
         $auth = auth()->user();
 
-        if($auth->role_id != '1' && $auth->role_id != '2'){
-            return response([
-                'message' => 'Usuário náo permitido',
-            ], 409);
-        }
-
         $tb_counters = tb_counter:: query()
         ->where('state', true)
         ->whereHas('counterService')

@@ -19,6 +19,17 @@ class tb_user extends Authenticatable implements JWTSubject
         ->select(['id', 'name']);
     }
 
+    public function current_counter()
+    {
+        $day = now()->format('Y-m-d');
+
+        return $this->hasOne(tb_counter_user::class, 'user_id')
+            ->where('state', true)
+            ->whereHas('daily', function ($query) use ($day) {
+                $query->where('day', $day);
+            });
+    }
+
     protected $table = 'tb_users'; 
 
     protected $hidden = [

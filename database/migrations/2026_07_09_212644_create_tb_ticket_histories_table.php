@@ -15,11 +15,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('ticket_id');
             $table->unsignedBigInteger('counter_id');
+            $table->unsignedBigInteger('daily_id');
             $table->unsignedBigInteger('state_id')->default('1');
             $table->timestamps();
 
             $table->foreign('ticket_id')->references('id')->on('tb_tickets')->onDelete('cascade');
             $table->foreign('counter_id')->references('id')->on('tb_counters')->onDelete('cascade');
+            $table->foreign('daily_id')->references('id')->on('tb_dailies')->onDelete('cascade');
             $table->foreign('state_id')->references('id')->on('tb_states')->onDelete('cascade');
         });
     }

@@ -7,9 +7,10 @@ use App\Http\Controllers\auth_controller;
 use App\Http\Controllers\user_controller;
 use App\Http\Controllers\counter_controller;
 use App\Http\Controllers\service_controller;
-use App\Http\Controllers\counter_service_controller;
-use App\Http\Controllers\ticket_controller;
 use App\Http\Controllers\extra_controller;
+use App\Http\Controllers\ticket_controller;
+use App\Http\Controllers\ticket_history_controller;
+use App\Http\Controllers\counter_service_controller;
 
 /* AUTH */
 Route::post("/login", [auth_controller::class, "login"]);
@@ -20,11 +21,14 @@ Route::get("/service/active", [service_controller::class, "active"]);
 /* TICKET */
 Route::get("/ticket", [ticket_controller::class, "index"]);
 Route::post("/ticket", [ticket_controller::class, "store"]);
+Route::get("/ticket/last", [ticket_history_controller::class, "last"]);
 
 
 Route::middleware('auth:api')->group(function (){
     /* AUTH */
     Route::get("/user", [auth_controller::class, "index"]);
+    Route::get("/user/active", [auth_controller::class, "active"]);
+    Route::post("/user/open", [auth_controller::class, "open"]);
     Route::post("/user/out", [auth_controller::class, "out"]);
     Route::get("/user/refresh", [auth_controller::class, "refresh"]);
     
@@ -52,6 +56,11 @@ Route::middleware('auth:api')->group(function (){
     Route::post("/counter/service", [counter_service_controller::class, "store"]);
     Route::patch("/counter/service", [counter_service_controller::class, "update"]);
     Route::delete("/counter/service/{id}", [counter_service_controller::class, "delete"]);
+    
+    /* TICKET */
+    Route::get("/ticket/counter", [ticket_controller::class, "counter"]);
+    Route::get("/ticket/next", [ticket_history_controller::class, "next"]);
+    Route::patch("/ticket/finish", [ticket_history_controller::class, "finish"]);
     
     /* EXTRA */    
     Route::get("/count", [extra_controller::class, "count"]);

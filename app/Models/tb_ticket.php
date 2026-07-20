@@ -13,7 +13,7 @@ class tb_ticket extends Model
     public function service()
     {
         return $this->belongsTo(tb_service::class, 'service_id')
-        ->where('state', true)->select('id', 'name');
+        ->where('state', true)->select(['id', 'name']);
     }
 
     protected $fillable = [

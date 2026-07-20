@@ -9,6 +9,7 @@ use App\Events\TicketCreated;
 use App\Models\tb_daily;
 use App\Models\tb_ticket;
 use App\Models\tb_service;
+use App\Models\tb_counter_user;
 
 class ticket_controller extends Controller
 {
@@ -16,7 +17,13 @@ class ticket_controller extends Controller
     {
         $day = now()->format('Y-m-d');
 
-        $tb_daily = tb_daily::firstOrCreate(['day' => $day]);
+        $tb_daily = tb_daily::where('day', $day)->first();
+
+        if (!$tb_daily) {
+            return response()->json([
+                'message' => 'Nenhuma sessão encontrada'
+            ], 404);
+        }
 
         $datas = tb_ticket:: query()
         ->with(['service'])
@@ -82,5 +89,58 @@ class ticket_controller extends Controller
 
             DB::rollback();
         }
+    }
+
+    public function counter()
+    {
+        $auth_id = auth()->id();
+
+        $day = now()->format('Y-m-d');
+
+        $tb_daily = tb_daily::where('day', $day)->first();
+
+        if (!$tb_daily) {
+            return response()->json([
+                'message' => 'Nenhuma sessão encontrada'
+            ], 404);
+        }
+
+        $tb_counter_user = tb_counter_user::query()
+        ->with(['counter.counterService']) 
+        ->where('user_id', $auth_id)
+        ->where('daily_id', $tb_daily->id)
+        ->where('state', true)
+        ->latest()
+        ->first();
+
+        if (!$tb_counter_user) {
+            return response()->json([
+                'message' => 'Nenhum caixa aberto'
+            ], 404);
+        }
+
+        $serviceIds = $tb_counter_user->counter?->counterService
+        ->pluck('service_id')
+        ->toArray() ?? [];
+
+        if (empty($serviceIds)) {
+            return response()->json([], 200);
+        }
+
+        $datas = tb_ticket::query()
+        ->with(['service'])
+        ->where('daily_id', $tb_daily->id)
+        ->whereIn('service_id', $serviceIds)
+        ->where('state', true)
+        ->get()
+        ->map(function ($data) {
+            return [
+                'id' => $data->id,
+                'reference' => $data->reference,
+                'service' => $data->service?->name
+            ];
+        });
+
+        return $datas;
     }
 }
