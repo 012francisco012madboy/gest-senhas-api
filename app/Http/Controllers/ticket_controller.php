@@ -29,6 +29,8 @@ class ticket_controller extends Controller
         ->with(['service'])
         ->where('daily_id', $tb_daily->id)
         ->where('state', true)
+        ->orderBy('updated_at')
+        ->latest('updated_at')
         ->get()
         ->map(function ($data){
             return [
@@ -110,7 +112,6 @@ class ticket_controller extends Controller
         ->where('user_id', $auth_id)
         ->where('daily_id', $tb_daily->id)
         ->where('state', true)
-        ->latest()
         ->first();
 
         if (!$tb_counter_user) {
@@ -132,6 +133,8 @@ class ticket_controller extends Controller
         ->where('daily_id', $tb_daily->id)
         ->whereIn('service_id', $serviceIds)
         ->where('state', true)
+        ->orderBy('updated_at')
+        ->latest('updated_at')
         ->get()
         ->map(function ($data) {
             return [

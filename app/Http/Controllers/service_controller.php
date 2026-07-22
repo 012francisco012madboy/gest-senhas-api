@@ -37,6 +37,7 @@ class service_controller extends Controller
         $tb_services = tb_service:: query()
         ->where('state', true)
         ->whereHas('counterService')
+        ->whereHas('counterService.counter.current_counter')
         ->select(
             'id',
             'name',

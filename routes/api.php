@@ -61,6 +61,9 @@ Route::middleware('auth:api')->group(function (){
     Route::get("/ticket/counter", [ticket_controller::class, "counter"]);
     Route::get("/ticket/next", [ticket_history_controller::class, "next"]);
     Route::patch("/ticket/finish", [ticket_history_controller::class, "finish"]);
+    Route::patch("/ticket/absent", [ticket_history_controller::class, "absent"]);
+    Route::patch("/ticket/returned", [ticket_history_controller::class, "returned"]);
+    Route::patch("/ticket/transferred", [ticket_history_controller::class, "transferred"]);
     
     /* EXTRA */    
     Route::get("/count", [extra_controller::class, "count"]);

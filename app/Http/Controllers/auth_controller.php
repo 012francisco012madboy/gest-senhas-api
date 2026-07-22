@@ -12,6 +12,7 @@ use App\Services\validation_service;
 use App\Models\tb_user;
 use App\Models\tb_daily;
 use App\Models\tb_counter_user;
+use App\Events\current_service;
 
 class auth_controller extends Controller
 {
@@ -94,11 +95,26 @@ class auth_controller extends Controller
 
         $tb_daily = tb_daily::firstOrCreate(['day' => $day]);
 
+        $tb_counter_user = tb_counter_user::query()
+        ->where('counter_id', $request->counter_id)
+        ->where('daily_id', $tb_daily->id)
+        ->where('state', true)
+        ->latest()
+        ->first();
+
+        if ($tb_counter_user) {
+            return response()->json([
+                'message' => 'Este balcão já se encontra em serviço'
+            ], 400);
+        }
+
         tb_counter_user:: create([
             'user_id' => $auth_id,
             'counter_id' => $request->counter_id,
             'daily_id' => $tb_daily->id
         ]);
+
+        event(new current_service());
 
         return response()->json([
             'message'  => 'Balcão aberto com sucesso'
@@ -161,6 +177,8 @@ class auth_controller extends Controller
         }
 
         JWTAuth::invalidate(JWTAuth::getToken());
+
+        event(new current_service());
 
         return response()->json([
             'message' => 'Logout efetuado com sucesso.'
