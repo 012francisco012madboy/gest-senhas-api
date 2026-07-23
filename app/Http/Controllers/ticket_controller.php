@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
-use App\Events\TicketCreated;
+use App\Events\ticket_created;
 use App\Models\tb_daily;
 use App\Models\tb_ticket;
 use App\Models\tb_service;
@@ -66,6 +66,7 @@ class ticket_controller extends Controller
             $tb_daily = tb_daily::firstOrCreate(['day' => $day]);
 
             $num = tb_ticket::query()
+            ->where('service_id', $service->id)
             ->where('daily_id', $tb_daily->id)
             ->count();
 
@@ -79,7 +80,7 @@ class ticket_controller extends Controller
                 'daily_id' => $tb_daily->id
             ]);
         
-            event(new TicketCreated());
+            event(new ticket_created());
 
             DB::commit();
 

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
-use App\Events\TicketCalled;
-use App\Events\TicketCreated;
+use App\Events\ticket_called;
+use App\Events\ticket_created;
 use App\Models\tb_daily;
 use App\Models\tb_ticket;
 use App\Models\tb_counter_user;
@@ -105,8 +105,8 @@ class ticket_history_controller extends Controller
                 'state_id' => '3', 
             ]);
             
-            event(new TicketCalled());
-            event(new TicketCreated());
+            event(new ticket_called());
+            event(new ticket_created());
     
             DB::commit();
 
@@ -170,7 +170,7 @@ class ticket_history_controller extends Controller
                 'state_id' => '7'
             ]);
             
-            event(new TicketCalled());
+            event(new ticket_called());
 
             return response()->json([
                 'message' => 'Atendimento finalizado com sucesso'
@@ -228,7 +228,7 @@ class ticket_history_controller extends Controller
                 'state_id' => '5'
             ]);
             
-            event(new TicketCalled());
+            event(new ticket_called());
 
             DB::commit(); 
             
@@ -305,8 +305,8 @@ class ticket_history_controller extends Controller
                 'state' => true
             ]);
             
-            event(new TicketCalled());
-            event(new TicketCreated());
+            event(new ticket_called());
+            event(new ticket_created());
     
             DB::commit();
 
@@ -402,8 +402,8 @@ class ticket_history_controller extends Controller
                 'state' => true
             ]);
             
-            event(new TicketCalled());
-            event(new TicketCreated());
+            event(new ticket_called());
+            event(new ticket_created());
 
             DB::commit();
 

@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class TicketCreated implements ShouldBroadcastNow
+class ticket_created implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -30,7 +30,7 @@ class TicketCreated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('tickets'),
+            new Channel('ticket-created'),
         ];
     }
 }
